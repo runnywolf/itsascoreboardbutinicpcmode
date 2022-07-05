@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"></meta>
+    <title>ITSA計分板</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+      integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+      crossorigin="anonymous">
+    </script>
+    <style>
+      input, select{
+        font-family:monospace;
+        text-align:center;
+      }
+      table{
+        white-space:nowrap;
+        border-collapse:separate;
+        border-spacing:0px;
+        border-bottom:1px #000000 solid;
+        text-align:center;
+      }
+      td{
+        border-top:1px #000000 solid;
+      }
+      td:nth-child(n+1):nth-child(-n+5){
+        border-right:1px #cccccc solid;
+      }
+      .bs{
+        display:flex;
+        justify-content:center;
+        min-width:980px;
+        font-family:monospace;
+      }
+      .thrs{
+        font-size:8px;
+        font-weight:bold;
+        color:#00bb00;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bs">
+      <div style="width:980px; margin-bottom:6px; display:flex; justify-content:flex-start;">
+        <div style="width:870px;">
+          <div style="margin-left:10px; display:flex; justify-content:flex-start;">
+            <span style="font-size:40px;">ITSA計分板</span>
+            <select style="height:20px; margin:28px 0px 0px 2px; border-color:#ffffff; background-color:#ffffff; font-size:15px;" onchange="ct_contest(this.selectedIndex)">
+              <option>2022/05/11</option>
+              <option>2022/03/09</option>
+            </select>
+          </div>
+          <div style="margin-left:10px;">
+            數據來源 -> <a href="https://itsascoreboard.itsa.org.tw/index.php">https://itsascoreboard.itsa.org.tw/index.php</a>
+          </div>
+          <div style="width:800px; margin-top:13px; border-radius:4px; background:#66ffff; padding:3px 0px; display:flex; justify-content:flex-start;">
+            <span style="width:74px; font-size:15px; font-weight:bold; text-align:center;">篩選器</span>
+            <input style="width:350px; margin-left:2px;" type="text" placeholder="ID" id="input_id">
+            <input style="width:190px; margin-left:5px;" type="text" placeholder="School" id="input_school">
+            <input style="width:40px; margin-left:5px;" type="text" placeholder="=" id="input_ACn">
+            <input style="width:40px; height:20px; margin:1px 0px 0px 12px; font-size:10px;" type="submit" value="查詢" id="button_search" onclick="jf_f_insert()">
+            <input style="width:40px; height:20px; margin:1px 0px 0px 3px; font-size:10px;" type="submit" value="清除" id="button_clear" onclick="jf_f_clear()">
+          </div>
+        </div>
+        <div>
+          <div style="border:1px #000000 solid; padding:4px;">
+            <div style="display:flex;">
+              <div style="width:30px; height:15px; margin-top:1.5px; background-color:#00bb00;"></div>
+              <div style="margin-left:3px;">最先解決</div>
+            </div>
+            <div style="display:flex;">
+              <div style="width:30px; height:15px; margin-top:1.5px; background-color:#55ff55;"></div>
+              <div style="margin-left:3px;">已解決</div>
+            </div>
+            <div style="display:flex;">
+              <div style="width:30px; height:15px; margin-top:1.5px; background-color:#ffaa00;"></div>
+              <div style="margin-left:3px;">數據遺失</div>
+            </div>
+            <div style="display:flex;">
+              <div style="width:28px; height:13px; margin-top:1.5px; border:1px dashed #000000; background-color:#ffffff;"></div>
+              <div style="margin-left:3px;">未解決</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="bs">
+      <table id="maintable"></table>
+    </div>
+    <div class="bs">
+      <div style="margin:10px 0px; text-align:center;">提交時間由爬蟲獲取並處理，若與實際情況誤差，以ITSA官方記分板為準。</div>
+    </div>
+    <div class="bs">
+      <div style="text-align:center;">v1.10.8 -> Last update date: 2022/7/5<br>Copyright © 2022 runnywolf. All rights reserved.</div>
+    </div>
+    <script>
+      //itsascoreboardbutinicpcmode.github.io v1.10.8(w87) Copyright © 2022 runnywolf. All rights reserved.
+      function getid(id){
+        return document.getElementById(id);
+      }
+      function jf_f_insert(){
+        var table = getid("maintable");
+        var id = ""+getid("input_id").value;
+        var school = ""+getid("input_school").value;
+        var ACn = ""+getid("input_ACn").value;
+        if (id == "" && school == "" && ACn == ""){
+          jf_f_clear();
+          return;
+        }
+        var r0, r1, c = 1;
+        for (var i = 0; i < data.players; i++){
+          let pd = data.data[i];
+          r1 = c;
+          if (i >= 1){
+            if (pd.rank == data.data[i-1]["rank"]) r1 = r0;
+          }
+          if ((""+pd.id).includes(id) && (""+pd.school).includes(school) && (""+pd.ACn).includes(ACn)){
+            table.rows[2+i].cells[0].innerHTML = r1+"("+pd.rank+")";
+            table.rows[2+i].style.background = (c%2 == 1)?"#ffffff":"#dddddd";
+            table.rows[2+i].style.display = "table-row";
+            c++;
+          }else table.rows[2+i].style.display = "none";
+          r0 = r1;
+        }
+      }
+      function jf_f_clear(){
+        var table = getid("maintable");
+        getid("input_id").value = "";
+        getid("input_school").value = "";
+        getid("input_ACn").value = "";
+        for (var i = 0; i < data.players; i++){
+          table.rows[2+i].cells[0].innerHTML = data.data[i]["rank"];
+          table.rows[2+i].style.background = (i%2 == 0)?"#ffffff":"#dddddd";
+          table.rows[2+i].style.display = "table-row";
+        }
+      }
+      function jf_thr(tf){
+        for (var i = 1; i <= 7; i++){
+          getid("P"+i+"a").style.display = (tf)?"none":"block";
+          getid("P"+i+"b").style.display = (tf)?"block":"none";
+        }
+      }
+      function jf_t_insert(){
+        var tablehtml = "<tr style='background-color:#ffffff;'>";
+        [[70,"Rank"],[360,"ID"],[200,"School"],[50,"Solved"],[60,"Penalty"]].map(function (i){
+          tablehtml += "<td style='width:"+i[0]+"px; border-bottom:1px #000000 solid;'>"+i[1]+"</td>";
+        });
+        for (var i = 1; i <= 7; i++){
+          let ACrate = Math.round(data.sumACn[i-1]/data.players*1000)/10;
+          tablehtml += "\
+            <td style='width:30px; border-bottom:1px #000000 solid;' onmouseover='jf_thr(1)' onmouseout='jf_thr(0)'>\
+              P"+i+"<br>\
+              <div class='thrs' title='ACrate: "+ACrate+" %'>\
+                <div style='display:block;' id='P"+i+"a'>"+data.sumACn[i-1]+"</div>\
+                <div style='color:#cc00cc; display:none;' id='P"+i+"b'>"+ACrate+"</div>\
+              </div>\
+            </td>\
+          ";
+        }
+        tablehtml += "</tr>";
+
+        data.data.map(function (p){
+          tablehtml += "<tr style='display:table-row;'>";
+          ["rank","id","school","ACn","Mpenalty"].map(function (i){
+            if (i == "id"){
+              let id = "";
+              let idl = 0;
+              for (var j = 0; j < p["id"].length; j++){
+                if (idl >= 40){
+                  id += "...";
+                  break;
+                }
+                id += p["id"][j];
+                if (p["id"][j].charCodeAt() < 256) idl++;
+                else idl += 2;
+              }
+              if (idl >= 40) tablehtml += "<td title='"+p["id"]+"'>";
+              else tablehtml += "<td>";
+              tablehtml += id+"(#"+p["#"]+")</td>";
+            }else tablehtml += "<td>"+p[i]+"</td>";
+          });
+          for (var i = 1; i <= 7; i++){
+            if (p["ACp"+i] != -1){
+              let bcolor = (p["#"] == data.minACpID[i-1])?"#00bb00":"#55ff55";
+              data.dataloss.map(function (j){
+                if (p["#"] == j[0] && i == j[1]) bcolor = "#ffaa00";
+              });
+              tablehtml += "<td><div style='width:30px; margin:0px auto; background-color:"+bcolor+";'>"+p["ACp"+i]+"</div></td>";
+            }else tablehtml += "<td></td>";
+          }
+          tablehtml += "</tr>";
+        });
+
+        $("#maintable").empty();
+        $("#maintable").append("<tbody><tr></tr></tbody>");
+        $("#maintable").find("tbody").append(tablehtml);
+        jf_f_clear();
+      }
+      function ct_contest(i){
+        var clist = ["202205", "202203"];
+        var request = new XMLHttpRequest();
+        request.open("get", "data/"+clist[i]+".json");
+        request.responseType = "json";
+        request.send();
+        request.onload = function(){
+          data = request.response;
+          jf_t_insert();
+        }
+      }
+      ct_contest(0);
+    </script>
+  </body>
+</html>
